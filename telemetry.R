@@ -138,17 +138,32 @@ telsco<-data.frame(telsco)
 telsco$eco=as.factor(telsco$eco)
 telsco$sednum=as.factor(telsco$sednum)
 telsco$geo=as.factor(telsco$geo)
+telsco$in_geo=as.factor(telsco$in_geo)
 telsco<-na.omit(telsco)
 
 library(lme4)
 
-m1<-glm(geo~bathy2+dist2+slope2+eco+sednum, data=telsco,family = 'binomial')
-summary(m1)
+#geographic location by majority where bird spent the winter (by id)
 
+m1<-glm(geo~bathy2+dist2+slope2+eco+sednum, data=telsco,family = 'binomial')
+summary(m1) #no significant variables closest was dist at p=0.139
+
+#ecoregion and sednum had very high se thus removed
 m2<-glm(geo~bathy2+dist2+slope2, data=telsco,family = 'binomial')
 summary(m2)
+#bathy p=0.0821, dist p=0.0191, slope p=0.157
 
 
+#geographic location by location of each individual wintering site
+
+m3<-glm(in_geo~bathy2+dist2+slope2+eco+sednum, data=telsco,family = 'binomial')
+summary(m3) #virginian ecoregion p=1.02e-06
+
+#sednum was removed for high se
+m4<-glm(in_geo~bathy2+dist2+slope2+eco, data=telsco,family = 'binomial')
+summary(m4)
+#bathy p=0.07403, dist p=0.00205, ecovirginian p=7.55e-07 
+#the rest were not significant
 
 
 
