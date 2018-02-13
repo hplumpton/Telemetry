@@ -130,7 +130,7 @@ write.table(telsco,"telsco.txt", sep="\t")
 
 #####################################################################################
 ###binomial testing
-
+#####################################################################################
 
 telsco<-read.csv("telsco.csv")
 
@@ -166,10 +166,27 @@ summary(m4)
 #the rest were not significant
 
 
+##################################################################################
+####Mann-Whitney U-Test
+#################################################################################
 
+ma<-wilcox.test(bathy~geo,data=telsco)
+ma #u=1343.5, p=0.005455
 
+mb<-wilcox.test(dist~geo,data=telsco)
+mb #u=1316, p=0.003248
 
+mc<-wilcox.test(slope~geo,data=telsco)
+mc #u=2606, p=0.0003944
 
+md<-wilcox.test(bathy~in_geo,data=telsco)
+md #u=1024, p=0.0001213
+
+me<-wilcox.test(dist~in_geo,data=telsco)
+me #u=1262, p=0.008577
+
+mf<-wilcox.test(slope~in_geo,data=telsco)
+mf #u=2555.5, p=3.852e-05
 
 
 
