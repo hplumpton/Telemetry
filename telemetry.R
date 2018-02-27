@@ -68,10 +68,10 @@ slope<-terrain(bathy, opt=c('slope'), unit='degrees')
 proj4string(slope)<-CRS("+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 
-shoreline=rgdal::readOGR("Layers/shoreline/GSHHS_shp/i/GSHHS_i_L1.shp")
-spTransform(shoreline,CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")) 
-shoreline<-gBuffer(shoreline,width = 0)
-seshoreline <- crop(shoreline, extent(-82, -63.5, 29, 45))
+shoreline=rgdal::readOGR("Layers/shoreline2/GSHHS_shp/f/GSHHS_f_L1.shp")
+shoreline<-spTransform(shoreline,CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")) 
+
+seshoreline <- crop(shoreline, extent(-82, -64, 29, 45))
 seshoreline<-spTransform(seshoreline,proj4string(telsco))
 
 telsco<-as.data.frame(telsco)
@@ -85,7 +85,7 @@ proj4string(dist)<-CRS("+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs8
 
 
 eco=rgdal::readOGR("Layers/MEOW/meow_ecos.shp")
-ecoregion <- crop(eco, extent(-82, -63.5, 29, 45))
+ecoregion <- crop(eco, extent(-82, -64, 29, 45))
 ecoregion<-spTransform(ecoregion,CRS(proj4string(telsco)))
 
 
@@ -104,10 +104,11 @@ telsco$slope=as.numeric(telsco$slope)
 
 telsco$eco=over(telsco, ecoregion)
 
-dist<-distanceFromPoints(seshoreline,telsco)
-telsco$dist=extract(dist,telsco)
-
-
+#dist<-distanceFromPoints(seshoreline,telsco)
+#telsco$dist=extract(dist,telsco)
+#telsco$dist<-gDistance(telsco,seshoreline,byid=TRUE)
+library(geosphere)
+telsco$dist<-dist2Line(telsco,seshoreline)
 
 telsco$bathy2=scale(telsco$bathy)
 telsco$bathy2=as.numeric(telsco$bathy2)
@@ -125,6 +126,8 @@ telsco$eco=as.factor(telsco@data$eco$ECOREGION)
 
 write.table(telsco,"telsco.txt", sep="\t")
 
+plot(telsco)
+plot(seshoreline,add=TRUE)
 
 
 
@@ -160,10 +163,19 @@ m3<-glm(in_geo~bathy2+dist2+slope2+eco+sednum, data=telsco,family = 'binomial')
 summary(m3) #virginian ecoregion p=1.02e-06
 
 #sednum was removed for high se
-m4<-glm(in_geo~bathy2+dist2+slope2+eco, data=telsco,family = 'binomial')
+m4<-glm(in_geo~bathy2+dist2+slope2, data=telsco,family = 'binomial')
 summary(m4)
 #bathy p=0.07403, dist p=0.00205, ecovirginian p=7.55e-07 
 #the rest were not significant
+
+#contained only variables that se did not cross zero
+m5<-glm(in_geo~dist2+slope2, data=telsco, family='binomial')
+summary(m5)
+
+library(MuMIn)
+
+out.put<-model.sel(m3,m4)
+out.put
 
 
 ##################################################################################
